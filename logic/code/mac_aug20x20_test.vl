@@ -1,0 +1,174 @@
+`timescale 1ns / 1ns
+`include "mac_aug20x20.vl"
+
+module mac_aug20x20_testbench();
+  reg clk;
+  initial begin
+    clk = 0;
+    repeat (10) begin
+      #2 clk = ~clk; // 250MHz
+    end
+  end
+
+  wire [319:0] col_vals_packed_16_20;
+  wire [319:0] row_vals_packed_16_20;
+  wire [639:0] results_packed_32_20;
+  wire [399:0] thd_masks_packed_1_20x20;
+  reg signed [15:0] col_vals [19:0];
+  reg signed [15:0] row_vals [19:0];
+  reg signed [31:0] results [19:0];
+  reg signed [19:0] thd_masks_per_col [19:0];
+  reg signed [31:0] thd;
+
+  integer i;
+  initial begin
+    thd = 32'b0001001110001000_0000000000000000; // 5000
+    // Test [1, 1, ...] * [1, 1, ...]
+    for (i = 0; i < 20; i = i + 1) begin
+      col_vals[i] = 16'b0000_0001_0000_0000;
+      row_vals[i] = 16'b0000_0001_0000_0000;
+    end
+
+    // Test [0, 0, ...] * [0, 0, ...]
+    #4 for (i = 0; i < 20; i = i + 1) begin
+      col_vals[i] = 16'b0000_0000_0000_0000;
+      row_vals[i] = 16'b0000_0000_0000_0000;
+    end
+
+    // Test integer multiplication
+    #4 for (i = 0; i < 20; i = i + 1) begin
+      col_vals[i][15:8] = $urandom % 5;
+      col_vals[i][7:0] = 0;
+      row_vals[i][15:8] = $urandom % 5;
+      row_vals[i][7:0] = 0;
+    end
+
+    // Test real number multiplication
+    #4 for (i = 0; i < 20; i = i + 1) begin
+      col_vals[i] = $random;
+      row_vals[i] = $random;
+    end
+  end
+
+  localparam sf16 = 2.0 ** -8.0;
+  localparam sf32 = 2.0 ** -16.0;
+  integer j;
+  always @ (posedge clk) begin
+    // Unpacking results to arrays
+    results[0] <= results_packed_32_20[31:0];
+    results[1] <= results_packed_32_20[63:32];
+    results[2] <= results_packed_32_20[95:64];
+    results[3] <= results_packed_32_20[127:96];
+    results[4] <= results_packed_32_20[159:128];
+    results[5] <= results_packed_32_20[191:160];
+    results[6] <= results_packed_32_20[223:192];
+    results[7] <= results_packed_32_20[255:224];
+    results[8] <= results_packed_32_20[287:256];
+    results[9] <= results_packed_32_20[319:288];
+    results[10] <= results_packed_32_20[351:320];
+    results[11] <= results_packed_32_20[383:352];
+    results[12] <= results_packed_32_20[415:384];
+    results[13] <= results_packed_32_20[447:416];
+    results[14] <= results_packed_32_20[479:448];
+    results[15] <= results_packed_32_20[511:480];
+    results[16] <= results_packed_32_20[543:512];
+    results[17] <= results_packed_32_20[575:544];
+    results[18] <= results_packed_32_20[607:576];
+    results[19] <= results_packed_32_20[639:608];
+
+    // Unpacking threshold masks
+    thd_masks_per_col[0] <= thd_masks_packed_1_20x20[19:0];
+    thd_masks_per_col[1] <= thd_masks_packed_1_20x20[39:20];
+    thd_masks_per_col[2] <= thd_masks_packed_1_20x20[59:40];
+    thd_masks_per_col[3] <= thd_masks_packed_1_20x20[79:60];
+    thd_masks_per_col[4] <= thd_masks_packed_1_20x20[99:80];
+    thd_masks_per_col[5]  <= thd_masks_packed_1_20x20[119:100];
+    thd_masks_per_col[6] <= thd_masks_packed_1_20x20[139:120];
+    thd_masks_per_col[7] <= thd_masks_packed_1_20x20[159:140];
+    thd_masks_per_col[8] <= thd_masks_packed_1_20x20[179:160];
+    thd_masks_per_col[9] <= thd_masks_packed_1_20x20[199:180];
+    thd_masks_per_col[10] <= thd_masks_packed_1_20x20[219:200];
+    thd_masks_per_col[11] <= thd_masks_packed_1_20x20[239:220];
+    thd_masks_per_col[12] <= thd_masks_packed_1_20x20[259:240];
+    thd_masks_per_col[13] <= thd_masks_packed_1_20x20[279:260];
+    thd_masks_per_col[14] <= thd_masks_packed_1_20x20[299:280];
+    thd_masks_per_col[15] <= thd_masks_packed_1_20x20[319:300];
+    thd_masks_per_col[16] <= thd_masks_packed_1_20x20[339:320];
+    thd_masks_per_col[17] <= thd_masks_packed_1_20x20[359:340];
+    thd_masks_per_col[18] <= thd_masks_packed_1_20x20[379:360];
+    thd_masks_per_col[19] <= thd_masks_packed_1_20x20[399:380];
+
+    // Print results
+    $display("\t%f\t%f\t%f", sf16 * $itor(col_vals[0]), sf16 * $itor(col_vals[1]), sf16 * $itor(col_vals[2]));
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[0]), thd_masks_per_col[0][0], thd_masks_per_col[1][0], thd_masks_per_col[2][0]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[1]), thd_masks_per_col[0][1], thd_masks_per_col[1][1], thd_masks_per_col[2][1]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[2]), thd_masks_per_col[0][2], thd_masks_per_col[1][2], thd_masks_per_col[2][2]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[3]), thd_masks_per_col[0][3], thd_masks_per_col[1][3], thd_masks_per_col[2][3]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[4]), thd_masks_per_col[0][4], thd_masks_per_col[1][4], thd_masks_per_col[2][4]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[5]), thd_masks_per_col[0][5], thd_masks_per_col[1][5], thd_masks_per_col[2][5]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[6]), thd_masks_per_col[0][6], thd_masks_per_col[1][6], thd_masks_per_col[2][6]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[7]), thd_masks_per_col[0][7], thd_masks_per_col[1][7], thd_masks_per_col[2][7]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[8]), thd_masks_per_col[0][8], thd_masks_per_col[1][8], thd_masks_per_col[2][8]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[9]), thd_masks_per_col[0][9], thd_masks_per_col[1][9], thd_masks_per_col[2][9]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[10]), thd_masks_per_col[0][10], thd_masks_per_col[1][10], thd_masks_per_col[2][10]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[11]), thd_masks_per_col[0][11], thd_masks_per_col[1][11], thd_masks_per_col[2][11]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[12]), thd_masks_per_col[0][12], thd_masks_per_col[1][12], thd_masks_per_col[2][12]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[13]), thd_masks_per_col[0][13], thd_masks_per_col[1][13], thd_masks_per_col[2][13]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[14]), thd_masks_per_col[0][14], thd_masks_per_col[1][14], thd_masks_per_col[2][14]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[15]), thd_masks_per_col[0][15], thd_masks_per_col[1][15], thd_masks_per_col[2][15]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[16]), thd_masks_per_col[0][16], thd_masks_per_col[1][16], thd_masks_per_col[2][16]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[17]), thd_masks_per_col[0][17], thd_masks_per_col[1][17], thd_masks_per_col[2][17]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[18]), thd_masks_per_col[0][18], thd_masks_per_col[1][18], thd_masks_per_col[2][18]);
+    $display("%f\t%b\t\t%b\t\t%b", sf16 * $itor(row_vals[19]), thd_masks_per_col[0][19], thd_masks_per_col[1][19], thd_masks_per_col[2][19]);
+    $display("RES:\t%f\t%f\t%f\n", sf32 * $itor(results[0]), sf32 * $itor(results[1]), sf32 * $itor(results[2]));
+    
+  end
+
+  // Instantiate DUT
+  mac_aug20x20 DUT (col_vals_packed_16_20, row_vals_packed_16_20, thd, results_packed_32_20, thd_masks_packed_1_20x20);
+
+  // Pack 20 * 16-bit column arrays
+  assign col_vals_packed_16_20[15:0] = col_vals[0];
+  assign col_vals_packed_16_20[31:16] = col_vals[1];
+  assign col_vals_packed_16_20[47:32] = col_vals[2];
+  assign col_vals_packed_16_20[63:48] = col_vals[3];
+  assign col_vals_packed_16_20[79:64] = col_vals[4];
+  assign col_vals_packed_16_20[95:80] = col_vals[5];
+  assign col_vals_packed_16_20[111:96] = col_vals[6];
+  assign col_vals_packed_16_20[127:112] = col_vals[7];
+  assign col_vals_packed_16_20[143:128] = col_vals[8];
+  assign col_vals_packed_16_20[159:144] = col_vals[9];
+  assign col_vals_packed_16_20[175:160] = col_vals[10];
+  assign col_vals_packed_16_20[191:176] = col_vals[11];
+  assign col_vals_packed_16_20[207:192] = col_vals[12];
+  assign col_vals_packed_16_20[223:208] = col_vals[13];
+  assign col_vals_packed_16_20[239:224] = col_vals[14];
+  assign col_vals_packed_16_20[255:240] = col_vals[15];
+  assign col_vals_packed_16_20[271:256] = col_vals[16];
+  assign col_vals_packed_16_20[287:272] = col_vals[17];
+  assign col_vals_packed_16_20[303:288] = col_vals[18];
+  assign col_vals_packed_16_20[319:304] = col_vals[19];
+
+  // Pack 20 * 16-bit row arrays
+  assign row_vals_packed_16_20[15:0] = row_vals[0];
+  assign row_vals_packed_16_20[31:16] = row_vals[1];
+  assign row_vals_packed_16_20[47:32] = row_vals[2];
+  assign row_vals_packed_16_20[63:48] = row_vals[3];
+  assign row_vals_packed_16_20[79:64] = row_vals[4];
+  assign row_vals_packed_16_20[95:80] = row_vals[5];
+  assign row_vals_packed_16_20[111:96] = row_vals[6];
+  assign row_vals_packed_16_20[127:112] = row_vals[7];
+  assign row_vals_packed_16_20[143:128] = row_vals[8];
+  assign row_vals_packed_16_20[159:144] = row_vals[9];
+  assign row_vals_packed_16_20[175:160] = row_vals[10];
+  assign row_vals_packed_16_20[191:176] = row_vals[11];
+  assign row_vals_packed_16_20[207:192] = row_vals[12];
+  assign row_vals_packed_16_20[223:208] = row_vals[13];
+  assign row_vals_packed_16_20[239:224] = row_vals[14];
+  assign row_vals_packed_16_20[255:240] = row_vals[15];
+  assign row_vals_packed_16_20[271:256] = row_vals[16];
+  assign row_vals_packed_16_20[287:272] = row_vals[17];
+  assign row_vals_packed_16_20[303:288] = row_vals[18];
+  assign row_vals_packed_16_20[319:304] = row_vals[19];
+
+endmodule

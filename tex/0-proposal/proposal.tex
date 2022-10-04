@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+
+% \usepackage[
+% backend=biber,
+% style=alphabetic,
+% sorting=ynt
+% ]{biblatex}
+
+\usepackage[square,numbers]{natbib}
+
+\bibliographystyle{plainnat}
+
+% \addbibresource{references.bib}
+
+\usepackage{fullpage}
+
+\topmargin=-0.2in
+\textheight=9.5in
+
+\title{Term Project Proposal}
+\author{Insoo Chung (UIN: 232004620)}
+
+\begin{document}
+\maketitle
+\section{Project Outline}
+
+To enable runtime countermeasures for adversarial attacks, \citet{ptolemy} recently proposed a hardware module that detects adversarial attacks with very low overhead.
+The proposed module was able to achieve high detection accuracy while maintaining a very low detection latency - 2\% runtime overhead as compared to the previous methods.
+Such feat of efficiency could be achieved by focusing on distinctive paths that adversarial inputs activate.
+
+The aim of this term project is to recreate the detector and assess its efficacy.
+The efficiency of the detector will be measured in terms of area and power overhead of the module implementation.
+
+\section{Background}
+
+In the context of neural networks, \textit{adversarial attacks} refer to attacks on deployed machine learning (ML) models with intention to cause failure.
+The resulting failures from these attacks may have fatal results.
+For example, for autonomous driving, a successful attack may result in severe injuries or even death.
+\citet{szegedy2013intriguing} found that adversarial inputs can be devised to resemble a perfectly well-formed inputs while still causing neural networks to fail.
+Thus, such attacks may occur in the most discrete forms and could be very hard to prevent.
+While various countermeasures have been studied \cite{detected,ensembles}, the studied methods require high computation from fully examining the inputs, and cannot be applied to to be deployed for important realtime ML applications (e.g. again, autonomous driving).
+
+\section{Expected Output}
+
+This project aims to provide implementation of relevant modules, enhanced MAC unit and sorting logic.
+Also, efficiency of the proposed module is to be measured in terms of area and power overhead.
+
+\begin{itemize}
+    \item Implemenations:
+    \begin{itemize}
+        \item Enhanced MAC unit in verilog.
+        \item Sorting logic in verilog with timing and energy estimation using Synergy's synthesis.
+    \end{itemize}
+    \item Efficiency evaluation:
+    \begin{itemize}
+        \item Power and area overhead of the detector will be measured to evaluate the module's efficiency.
+    \end{itemize}
+\end{itemize}
+
+\section{Approach and Milestones}
+
+\begin{itemize}
+    \item Write proposal (Week 9)
+    \item Implement enhanced MAC unit. (Week 10-11)
+    \item Implement testing logic around the enhanced MAC unit. (Week 10-11)
+    \item Implement sorting logic. (Week 11)
+    \item Setup Synopsis synthesis for evaluation of the developed sorting logic. (Week 11-13)
+    \item Perform evaluation. (Week 12-13)
+    \item Write final report (Week 9-14)
+\end{itemize}
+
+
+\bibliography{references}
+\end{document}

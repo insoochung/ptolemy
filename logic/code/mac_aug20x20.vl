@@ -1,0 +1,64 @@
+`timescale 1ns / 1ns
+`include "mac_aug.vl"
+
+module mac_aug_col(
+    input [15:0] col_val,
+    input [319:0] row_vals_packed_16_20,
+    input [31:0] thd,
+    output [31:0] result,
+    output [19:0] thd_masks_per_col
+);
+    wire [31:0] psums[0:18];
+    mac_aug m0(col_val, row_vals_packed_16_20[15:0], 0, thd, psums[0], thd_masks_per_col[0]);
+    mac_aug m1(col_val, row_vals_packed_16_20[31:16], psums[0], thd, psums[1], thd_masks_per_col[1]);
+    mac_aug m2(col_val, row_vals_packed_16_20[47:32], psums[1], thd, psums[2], thd_masks_per_col[2]);
+    mac_aug m3(col_val, row_vals_packed_16_20[63:48], psums[2], thd, psums[3], thd_masks_per_col[3]);
+    mac_aug m4(col_val, row_vals_packed_16_20[79:64], psums[3], thd, psums[4], thd_masks_per_col[4]);
+    mac_aug m5(col_val, row_vals_packed_16_20[95:80], psums[4], thd, psums[5], thd_masks_per_col[5]);
+    mac_aug m6(col_val, row_vals_packed_16_20[111:96], psums[5], thd, psums[6], thd_masks_per_col[6]);
+    mac_aug m7(col_val, row_vals_packed_16_20[127:112], psums[6], thd, psums[7], thd_masks_per_col[7]);
+    mac_aug m8(col_val, row_vals_packed_16_20[143:128], psums[7], thd, psums[8], thd_masks_per_col[8]);
+    mac_aug m9(col_val, row_vals_packed_16_20[159:144], psums[8], thd, psums[9], thd_masks_per_col[9]);
+    mac_aug m10(col_val, row_vals_packed_16_20[175:160], psums[9], thd, psums[10], thd_masks_per_col[10]);
+    mac_aug m11(col_val, row_vals_packed_16_20[191:176], psums[10], thd, psums[11], thd_masks_per_col[11]);
+    mac_aug m12(col_val, row_vals_packed_16_20[207:192], psums[11], thd, psums[12], thd_masks_per_col[12]);
+    mac_aug m13(col_val, row_vals_packed_16_20[223:208], psums[12], thd, psums[13], thd_masks_per_col[13]);
+    mac_aug m14(col_val, row_vals_packed_16_20[239:224], psums[13], thd, psums[14], thd_masks_per_col[14]);
+    mac_aug m15(col_val, row_vals_packed_16_20[255:240], psums[14], thd, psums[15], thd_masks_per_col[15]);
+    mac_aug m16(col_val, row_vals_packed_16_20[271:256], psums[15], thd, psums[16], thd_masks_per_col[16]);
+    mac_aug m17(col_val, row_vals_packed_16_20[287:272], psums[16], thd, psums[17], thd_masks_per_col[17]);
+    mac_aug m18(col_val, row_vals_packed_16_20[303:288], psums[17], thd, psums[18], thd_masks_per_col[18]);
+    mac_aug m19(col_val, row_vals_packed_16_20[319:304], psums[18], thd, result, thd_masks_per_col[19]);
+
+endmodule
+
+// Systolic fixed point 16-bit MAC array with 20X20 PEs + Ptolemy augmentation
+module mac_aug20x20(
+    input [319:0] col_vals_packed_16_20,
+    input [319:0] row_vals_packed_16_20,
+    input [31:0] thd,
+    output [639:0] results_packed_32_20,
+    output [399:0] thd_masks_packed_1_20x20
+);
+  mac_aug_col c0(col_vals_packed_16_20[15:0], row_vals_packed_16_20, thd, results_packed_32_20[31:0], thd_masks_packed_1_20x20[19:0]);
+  mac_aug_col c1(col_vals_packed_16_20[31:16], row_vals_packed_16_20, thd, results_packed_32_20[63:32], thd_masks_packed_1_20x20[39:20]);
+  mac_aug_col c2(col_vals_packed_16_20[47:32], row_vals_packed_16_20, thd, results_packed_32_20[95:64], thd_masks_packed_1_20x20[59:40]);
+  mac_aug_col c3(col_vals_packed_16_20[63:48], row_vals_packed_16_20, thd, results_packed_32_20[127:96], thd_masks_packed_1_20x20[79:60]);
+  mac_aug_col c4(col_vals_packed_16_20[79:64], row_vals_packed_16_20, thd, results_packed_32_20[159:128], thd_masks_packed_1_20x20[99:80]);
+  mac_aug_col c5(col_vals_packed_16_20[95:80], row_vals_packed_16_20, thd, results_packed_32_20[191:160], thd_masks_packed_1_20x20[119:100]);
+  mac_aug_col c6(col_vals_packed_16_20[111:96], row_vals_packed_16_20, thd, results_packed_32_20[223:192], thd_masks_packed_1_20x20[139:120]);
+  mac_aug_col c7(col_vals_packed_16_20[127:112], row_vals_packed_16_20, thd, results_packed_32_20[255:224], thd_masks_packed_1_20x20[159:140]);
+  mac_aug_col c8(col_vals_packed_16_20[143:128], row_vals_packed_16_20, thd, results_packed_32_20[287:256], thd_masks_packed_1_20x20[179:160]);
+  mac_aug_col c9(col_vals_packed_16_20[159:144], row_vals_packed_16_20, thd, results_packed_32_20[319:288], thd_masks_packed_1_20x20[199:180]);
+  mac_aug_col c10(col_vals_packed_16_20[175:160], row_vals_packed_16_20, thd, results_packed_32_20[351:320], thd_masks_packed_1_20x20[219:200]);
+  mac_aug_col c11(col_vals_packed_16_20[191:176], row_vals_packed_16_20, thd, results_packed_32_20[383:352], thd_masks_packed_1_20x20[239:220]);
+  mac_aug_col c12(col_vals_packed_16_20[207:192], row_vals_packed_16_20, thd, results_packed_32_20[415:384], thd_masks_packed_1_20x20[259:240]);
+  mac_aug_col c13(col_vals_packed_16_20[223:208], row_vals_packed_16_20, thd, results_packed_32_20[447:416], thd_masks_packed_1_20x20[279:260]);
+  mac_aug_col c14(col_vals_packed_16_20[239:224], row_vals_packed_16_20, thd, results_packed_32_20[479:448], thd_masks_packed_1_20x20[299:280]);
+  mac_aug_col c15(col_vals_packed_16_20[255:240], row_vals_packed_16_20, thd, results_packed_32_20[511:480], thd_masks_packed_1_20x20[319:300]);
+  mac_aug_col c16(col_vals_packed_16_20[271:256], row_vals_packed_16_20, thd, results_packed_32_20[543:512], thd_masks_packed_1_20x20[339:320]);
+  mac_aug_col c17(col_vals_packed_16_20[287:272], row_vals_packed_16_20, thd, results_packed_32_20[575:544], thd_masks_packed_1_20x20[359:340]);
+  mac_aug_col c18(col_vals_packed_16_20[303:288], row_vals_packed_16_20, thd, results_packed_32_20[607:576], thd_masks_packed_1_20x20[379:360]);
+  mac_aug_col c19(col_vals_packed_16_20[319:304], row_vals_packed_16_20, thd, results_packed_32_20[639:608], thd_masks_packed_1_20x20[399:380]);
+
+endmodule

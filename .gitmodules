@@ -1,0 +1,3 @@
+[submodule "cacti"]
+	path = sram/cacti
+	url = git@github.com:insoochung/cacti7-osx-clang.git

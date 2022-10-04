@@ -1,0 +1,6 @@
+## Built files
+cacti
+obj_dbg/
+
+## Simulation output files
+*.out

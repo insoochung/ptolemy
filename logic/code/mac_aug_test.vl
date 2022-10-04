@@ -1,0 +1,74 @@
+`timescale 1ns / 1ns
+`include "mac_aug.vl"
+
+module mac_aug_testbench();
+  reg clk;
+
+  // Toggle clock
+  initial begin
+    clk = 0;
+    repeat(20) begin
+      #2 clk = ~clk; // 250MHz
+    end
+  end
+
+  reg signed [15:0] mult1, mult2;
+  reg signed [31:0] psum, result, out, thd;
+  reg mask;
+
+  initial begin
+    // Test 0 * 0 * 0
+    mult1 = 16'd0;
+    mult2 = 16'd0;
+    psum = 32'd0;
+    thd = 32'b0000_0101_0011_0010_0000_0000_0000_0000; // 1330
+    // Test 1 * 1 + 0
+    #4
+    mult1 = 16'b0000_0001_0000_0000;
+    mult2 = 16'b0000_0001_0000_0000;
+    // Test random integers
+    #4
+    mult1[15:8] = $urandom % 128;
+    mult2[15:8] = $urandom % 128;
+    psum[31:16] = $urandom % 1024;
+    // Test random real numbers
+    #4
+    mult1[15:8] = $urandom % 128;
+    mult1[7:0] = $random;
+    mult2[15:8] = $urandom % 128;
+    mult2[7:0] = $random;
+    psum[31:16] = $urandom % 1024;
+    psum[15:0] = $random;
+    // Test positive and negative numbers
+    #4
+    mult1 = mult1 * -1;
+    #4
+    thd = 32'b0000_0101_0011_1100_0000_0000_0000_0000; // 1330
+    #4
+    mult2 = mult2 * -1;
+    #4
+    psum = psum * -1;
+  end
+
+  wire signed [31:0] mac_out;
+  wire within_thd;
+
+  localparam sf16 = 2.0 ** -8.0;
+  localparam sf32 = 2.0 ** -16.0;
+
+  // Instantiate DUT
+  mac_aug DUT (mult1, mult2, psum, thd, mac_out, within_thd);
+  wire signed [31:0] mult_out;
+  mult m (mult1, mult2, mult_out);
+
+  always @ (posedge clk) begin
+    out <= mac_out;
+    $display("mult1 %f X mult2 %f + psum %f = out %f, mult_out %d, thd %d, mask %d",
+            sf16 * $itor(mult1), sf16 * $itor(mult2),
+            sf32 * $itor(psum), sf32 * $itor(out),
+            sf32 * $itor(mult_out), sf32 * $itor(thd), mask);
+  end
+  always @ (posedge clk) begin
+    mask <= within_thd;
+  end
+endmodule

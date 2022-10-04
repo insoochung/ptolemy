@@ -1,0 +1,30 @@
+`timescale 1ns / 1ns
+
+`include "adder_32bit.v"
+`include "multiplier_16bit.v"
+
+module add(num1, num2, result); // 32-bit fixed point adder, s15.16
+  input signed [31:0] num1, num2;
+  output signed [31:0] result;
+  // assign result = num1 + num2;
+  adder_32bit adder(num1, num2, result);
+endmodule
+
+module mult(num1, num2, result); // 16-bit fixed point multiplier, s7.8
+  input signed [15:0] num1, num2; // num1 is multiplicand and num2 is multiplier
+  output signed [31:0] result;
+  // assign result = num1 * num2;
+  multiplier_16bit booth(result, num1, num2);
+endmodule
+
+module mac(
+  input signed [15:0] mult1, // s7.8
+  input signed [15:0] mult2, // s7.8
+  input signed [31:0] psum, // s15.16
+  output signed [31:0] out // s15.16
+);
+  wire signed [31:0] mult_out;
+  mult m0 (mult1, mult2, mult_out); // 16 bit mutltiplier
+  add a1 (mult_out, psum, out); // 16 bit adder
+
+endmodule
