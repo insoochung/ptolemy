@@ -1,6 +1,6 @@
 # Evaluating Ptolemy
 
-This repository contains code and execution scripts to evaluate [Ptolemy](https://arxiv.org/abs/2008.09954) in terms of energy and area overhead. There are multiple variations to Ptolemy. In this work we study two most efficient variations: `FwAb` and `BwAb`. Also, we assume AlexNet as the target  neural network.
+This repository contains code and execution scripts to evaluate [Ptolemy: Architecture Support for Robust Deep Learning](https://arxiv.org/abs/2008.09954) in terms of energy and area overhead. There are multiple variations to Ptolemy. In this work we study two most efficient variations: `FwAb` and `BwAb`. Also, we assume AlexNet as the target  neural network.
 
 ---
 
